@@ -51,12 +51,6 @@ def xml_parser(xmlFile):
             sql_dbms(customers)
 
 
-
-
-
-
-
-
 def sql_dbms(customers):
     connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
     sqlInsert = 'BULK INSERT dbName FROM {0} WITH('.format(customers)
