@@ -90,5 +90,61 @@
       <Total>241</Total>
     </Order>
   </Orders>
+</Customer><Customer xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.datacontract.org/2004/07/DataGenerator">
+  <Age>100</Age>
+  <CustomerId>103</CustomerId>
+  <Email>yes@gmail.net</Email>
+  <Name>Hugh Janus</Name>
+  <Orders>
+    <Order>
+      <CustomerId>103</CustomerId>
+      <Lines>
+        <OrderLine>
+          <OrderLineId>302</OrderLineId>
+          <Price>4100</Price>
+          <ProductId>1082</ProductId>
+          <Qty>50</Qty>
+          <Total>86</Total>
+        </OrderLine>
+        <OrderLine>
+          <OrderLineId>303</OrderLineId>
+          <Price>9</Price>
+          <ProductId>82931</ProductId>
+          <Qty>5</Qty>
+          <Total>128</Total>
+        </OrderLine>
+      </Lines>
+      <OrderId>153</OrderId>
+      <Total>186</Total>
+    </Order>
+    <Order>
+      <CustomerId>103</CustomerId>
+      <Lines>
+        <OrderLine>
+          <OrderLineId>303</OrderLineId>
+          <Price>95</Price>
+          <ProductId>2553</ProductId>
+          <Qty>1</Qty>
+          <Total>95</Total>
+        </OrderLine>
+        <OrderLine>
+          <OrderLineId>304</OrderLineId>
+          <Price>4</Price>
+          <ProductId>1324</ProductId>
+          <Qty>1</Qty>
+          <Total>4</Total>
+        </OrderLine>
+        <OrderLine>
+          <OrderLineId>305</OrderLineId>
+          <Price>71</Price>
+          <ProductId>9621</ProductId>
+          <Qty>2</Qty>
+          <Total>142</Total>
+        </OrderLine>
+      </Lines>
+      <OrderId>151</OrderId>
+      <Total>241</Total>
+    </Order>
+  </Orders>
 </Customer>
 </Customers>

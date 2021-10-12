@@ -1,5 +1,6 @@
 import csv
 from io import StringIO
+from collections import defaultdict
 import lxml.etree as etree
 import pyodbc as db
 
@@ -10,84 +11,55 @@ def xml_parser(xmlFile):
         xmlTree = etree.parse(obj)
         xmlRoot = xmlTree.getroot()
 
+    namespaces = {'x': 'http://schemas.datacontract.org/2004/07/DataGenerator'}
 
-    customers_list = []
-    orderLine_List = []
-    orderId = 'null'
-    #Goes through each customer Element
-    for customer in xmlRoot:
+    customers = []
+
+    for customer in xmlRoot.findall('x:Customer', namespaces):
+        customerAll = {'customer_detail': 'null', 'order_details': [], 'order_line': []}
         customer_details = {'CustomerId': 'null', 'Name': 'null', 'Email': 'null', 'Age': 'null'}
-        orders = {'OrderId': 'null', 'CustomerId': 'null', 'Total': 'null'}
+        customer_details['CustomerId'] = customer.find('x:CustomerId', namespaces).text
+        customer_details['Email'] = customer.find('x:Email', namespaces).text
+        customer_details['Name'] = customer.find('x:Name', namespaces).text
+        customer_details['Age'] = customer.find('x:Age', namespaces).text
+        customerAll['customer_detail'] = customer_details
+
+        for orders in customer.findall('x:Orders', namespaces):
+            for order in orders.findall('x:Order', namespaces):
+                order_details = {'OrderId': 'null', 'CustomerId': 'null', 'Total': 'null'}
+                order_details['OrderId'] = order.find('x:OrderId', namespaces).text
+                OrderId = order.find('x:OrderId', namespaces).text
+
+                order_details['CustomerId'] = order.find('x:CustomerId', namespaces).text
+                order_details['Total'] = order.find('x:Total', namespaces).text
+                customerAll['order_details'].append(order_details)
+
+                for lines in order.findall('x:Lines', namespaces):
+                    for OrderLine in lines.findall('x:OrderLine', namespaces):
+                        order_line = {}
+                        order_line['OrderLineId'] = OrderLine.find('x:OrderLineId', namespaces).text
+                        order_line['Qty'] = OrderLine.find('x:Qty', namespaces).text
+                        order_line['Price'] = OrderLine.find('x:Price', namespaces).text
+                        order_line['LineTotal'] = OrderLine.find('x:Total', namespaces).text
+                        order_line['ProductId'] = OrderLine.find('x:ProductId', namespaces).text
+                        order_line['OrderId'] = OrderId
+                        customerAll['order_line'].append(order_line)
+                        orders.clear()
+
+        customers.append(customerAll)
+        if len(customers) == 50:
+            sql_dbms(customers)
 
 
-        #Loops through each customer attribute
-        for element in customer:
-            if 'CustomerId' in element.tag:
-                customer_details['CustomerId'] = element.text
-
-            if 'Name' in element.tag:
-                customer_details['Name'] = element.text
-
-            if 'Email' in element.tag:
-                customer_details['Email'] = element.text
-
-            if 'Age' in element.tag:
-                customer_details['Age'] = element.text
-
-            if 'Orders' in element.tag:
-                for ordersxml in element:
-
-                    if 'Order' in ordersxml.tag:
-                        for order in ordersxml:
 
 
-                            #order_lines['OrderId'] = orders['OrderId']
-                            if 'Lines' in order.tag:
-                                for line in order:
-                                    order_lines = {'OrderLineId': 'null', 'OrderId': 'null', 'Qty': 'null','Price': 'null','LineTotal': 'null', 'ProductId': 'null'}
-                                    for orderLine in line:
-
-                                        if 'OrderLineId' in orderLine.tag:
-                                            order_lines['OrderLineId'] = orderLine.text
-                                            print(orderLine.text)
-
-                                        if 'Price' in orderLine.tag:
-                                            order_lines['Price'] = orderLine.text
-                                            print(orderLine.text)
-
-                                        if 'ProductId' in orderLine.tag:
-                                            order_lines['ProductId'] = orderLine.text
-                                            print(orderLine.text)
-
-                                        if 'Qty' in orderLine.tag:
-                                            order_lines['Qty'] = orderLine.text
-                                            print(orderLine.text)
-
-                                        if 'Total' in orderLine.tag:
-                                            order_lines['LineTotal'] = orderLine.text
-                                            print(orderLine.text)
-                                    orderLine_List.append(order_lines)
-                            if 'CustomerId' in order.tag:
-                                orders['CustomerId'] = order.text
-
-                            if 'OrderId' in order.tag:
-                                orders['OrderId'] = order.text
-                                order_lines['OrderId'] = orders['OrderId']
-
-                            if 'Total' in order.tag:
-                                orders['Total'] = order.text
-
-
-        print(orders)
-        print(orderLine_List)
-        print(customer_details)
 
 
 
 
 def sql_dbms(customers):
     connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
-    sqlInsert = 'INSERT INTO Customers({}) Values({})'
+    sqlInsert = 'BULK INSERT dbName FROM {0} WITH('.format(customers)
     connection = db.connect(connectionString)
     cursor = connection.cursor()
     cursor.execute('SELECT 1')
@@ -107,11 +79,11 @@ def testConn():
     connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
     connection = db.connect(connectionString)
     cursor = connection.cursor()
-    connStr = cursor.execute('SELECT * FROM CustomerId')
+    connStr = cursor.execute('SELECT 1')
     print(connStr)
 
 if __name__ == "__main__":
-    # testConn()
+    #testConn()
     # xmlFile = open('customers.xml', 'r')
     xml_parser('sample.xml')
     # sql_dbms(customers)
