@@ -47,8 +47,11 @@ def xml_parser(xmlFile):
                         orders.clear()
 
         customers.append(customerAll)
+
         if len(customers) == 50:
             sql_dbms(customers)
+            customers = []
+    print(customers)
 
 
 def sql_dbms(customers):
