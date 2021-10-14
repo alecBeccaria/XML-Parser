@@ -91,10 +91,8 @@ def sqlImport(csvFilePath, tableName ):
     connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
     connection = db.connect(connectionString)
     cursor = connection.cursor()
-    bulkSQL = "BULK INSERT " + tableName + " FROM '" + csvFilePath + "' WITH (FORMAT = 'CSV', FIRSTROW = 2)"
-    sql = """INSERT INTO Customers (CustomerId, Name, Email, Age) 
-    VALUES (?, ?, ?, ?)"""
-    cursor.execute(bulkSQL)
+    sql = 'BULK INSERT {0} FROM {1} WITH (FORMAT='CSV', FIRSTROW=2);'.format(tableName, csvFilePath)
+    cursor.execute(sql)
     cursor.commit()
     cursor.close()
 
