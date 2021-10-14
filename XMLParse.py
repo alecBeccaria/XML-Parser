@@ -49,9 +49,11 @@ def xml_parser(xmlFile):
         customers.append(customerAll)
 
         if len(customers) == 50:
+            print(customers)
             sql_dbms(customers)
-            customers = []
-    print(customers)
+            del customerAll
+
+
 
 
 def sql_dbms(customers):
@@ -82,7 +84,7 @@ def testConn():
 if __name__ == "__main__":
     #testConn()
     # xmlFile = open('customers.xml', 'r')
-    xml_parser('sample.xml')
+    xml_parser('customers.xml')
     # sql_dbms(customers)
 
 
