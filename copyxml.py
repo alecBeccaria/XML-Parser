@@ -4,6 +4,7 @@ from collections import defaultdict
 import lxml.etree as etree
 import pyodbc as db
 import csv
+import contextlib
 
 
 def xml_parser(xmlFile):
@@ -43,80 +44,63 @@ def xml_parser(xmlFile):
                         order_line['OrderId'] = OrderId
                         tuples = [v for k, v in order_line.items()]
                         line_list.append(tuples)
-                        orders.clear()
         cust_tuples = [v for k, v in customer_dict.items()]
         order_tuples = [v for k, v in order_details.items()]
         customer_list.append(cust_tuples)
         order_list.append(order_tuples)
-        print(customer_list)
-        print(order_list)
-        print(line_list)
-        if len(customer_list) == 3:
-            wrtieCustomersCSV(customer_list)
-            sqlImport('C:/Users/abecc/Documents/GitHub/XML-Parser/customers.csv', 'Customers')
-        if len(order_list) == 3:
-            writeOrdersCSV(order_list)
-            sqlImport('C:/Users/abecc/Documents/GitHub/XML-Parser/orders.csv', 'Orders')
-
-        if len(line_list) == 10:
-            writeOrderLinesCSV(line_list)
-            sqlImport('C:/Users/abecc/Documents/GitHub/XML-Parser/orderLines.csv', 'OrderLines')
+    print(customer_list)
+    print(order_list)
+    print(line_list)
+    sql_customers(customer_list)
+    sql_orders(order_list)
+    sql_orderlines(line_list)
 
 
 
 
-def wrtieCustomersCSV(list_data):
-    with open('customers.csv', 'w') as file:
-        header = ['CustomerId', 'Name', 'Email', 'Age']
-        writer = csv.writer(file)
-        writer.writerow(header)
-        writer.writerows(list_data)
 
-def writeOrdersCSV(list_data):
-    with open('orders.csv', 'w') as file:
-        header = ['OrderId', 'CustomerId', 'Total']
-        writer = csv.writer(file)
-        writer.writerow(header)
-        writer.writerows(list_data)
-
-def writeOrderLinesCSV(list_data):
-    with open('orderLines.csv', 'w') as file:
-        header = ['OrderLineId', 'OrderId', 'Qty', 'Price', 'LineTotal', 'ProductId']
-        writer = csv.writer(file)
-        writer.writerow(header)
-        writer.writerows(list_data)
-
-
-def sqlImport(csvFilePath, tableName ):
-    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+def sql_customers(customers):
+    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?'
     connection = db.connect(connectionString)
     cursor = connection.cursor()
-    sql = 'BULK INSERT {0} FROM {1} WITH (FORMAT='CSV', FIRSTROW=2);'.format(tableName, csvFilePath)
-    cursor.execute(sql)
+    sql = """INSERT INTO Customers (CustomerId, Name, Email, Age) 
+        VALUES (?, ?, ?, ?)
+        """
+    print('starting customers import')
+    cursor.fast_executemany = True
+    cursor.executemany(sql, customers)
+    print('Import Complete')
     cursor.commit()
     cursor.close()
 
+
+
+
 def sql_orders(orders):
-    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?'
     connection = db.connect(connectionString)
     cursor = connection.cursor()
     sql = """INSERT INTO Orders (OrderId, CustomerId, Total) 
     VALUES (?, ?, ?)
     """
-    print(orders)
+    print('Starting orders import')
+    cursor.fast_executemany = True
     cursor.executemany(sql, orders)
+    print('Import Complete')
     cursor.commit()
     cursor.close()
 
 def sql_orderlines(orderlines):
-    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;'
     connection = db.connect(connectionString)
     cursor = connection.cursor()
     sql = """INSERT INTO OrderLines (OrderLineId, OrderId, Qty, Price, LineTotal, ProductId) 
     VALUES (?, ?, ?, ?, ?, ?)
     """
-    print(orderlines)
+    print('Starting order lines import')
+    cursor.fast_executemany = True
     cursor.executemany(sql, orderlines)
+    print('Import Complete')
     cursor.commit()
     cursor.close()
 
@@ -125,7 +109,7 @@ def sql_orderlines(orderlines):
 
 
 def testConn():
-    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    connectionString = "Driver={SQL Server};Server=localhost:3306;Database=XML;Uid=computer;Pwd=password;"
     connection = db.connect(connectionString)
     cursor = connection.cursor()
     connStr = cursor.execute('SELECT 1')
@@ -135,5 +119,5 @@ def testConn():
 if __name__ == "__main__":
     # testConn()
     # xmlFile = open('customers.xml', 'r')
-    xml_parser('sample.xml')
+    xml_parser('customers.xml')
     # sql_dbms(customers)
