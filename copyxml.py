@@ -3,8 +3,7 @@ from io import StringIO
 from collections import defaultdict
 import lxml.etree as etree
 import pyodbc as db
-import csv
-import contextlib
+
 
 
 def xml_parser(xmlFile):
@@ -14,11 +13,11 @@ def xml_parser(xmlFile):
         xmlRoot = xmlTree.getroot()
 
     namespaces = {'x': 'http://schemas.datacontract.org/2004/07/DataGenerator'}
+    importCusCount = 0
 
-    customer_list = []
-    order_list = []
-    line_list = []
     for customer in xmlRoot.findall('x:Customer', namespaces):
+        order_list = []
+        line_list = []
         customer_dict = {'CustomerId': 'null', 'Name': 'null', 'Email': 'null', 'Age': 'null'}
         customer_dict['CustomerId'] = customer.find('x:CustomerId', namespaces).text
         customer_dict['Email'] = customer.find('x:Email', namespaces).text
@@ -32,6 +31,8 @@ def xml_parser(xmlFile):
                 OrderId = order.find('x:OrderId', namespaces).text
                 order_details['CustomerId'] = order.find('x:CustomerId', namespaces).text
                 order_details['Total'] = order.find('x:Total', namespaces).text
+                order_tuples = [v for k, v in order_details.items()]
+                order_list.append(order_tuples)
 
                 for lines in order.findall('x:Lines', namespaces):
                     for OrderLine in lines.findall('x:OrderLine', namespaces):
@@ -44,40 +45,48 @@ def xml_parser(xmlFile):
                         order_line['OrderId'] = OrderId
                         tuples = [v for k, v in order_line.items()]
                         line_list.append(tuples)
+                        OrderLine.clear()
+                        del OrderLine, order_line
+                    lines.clear()
+                    del lines
+                order.clear()
+                del order
+            orders.clear()
+            del orders
+
         cust_tuples = [v for k, v in customer_dict.items()]
-        order_tuples = [v for k, v in order_details.items()]
-        customer_list.append(cust_tuples)
-        order_list.append(order_tuples)
-    print(customer_list)
-    print(order_list)
-    print(line_list)
-    sql_customers(customer_list)
-    sql_orders(order_list)
-    sql_orderlines(line_list)
+
+        sql_customers(cust_tuples)
+        sql_orders(order_list)
+        sql_orderlines(line_list)
+        importCusCount += 1
+        print(importCusCount)
+        customer.clear()
+        del order_list, line_list, customer_dict, cust_tuples
 
 
 
 
 
 def sql_customers(customers):
-    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?'
+    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
     connection = db.connect(connectionString)
     cursor = connection.cursor()
     sql = """INSERT INTO Customers (CustomerId, Name, Email, Age) 
         VALUES (?, ?, ?, ?)
         """
     print('starting customers import')
-    cursor.fast_executemany = True
-    cursor.executemany(sql, customers)
+    cursor.execute(sql, customers)
     print('Import Complete')
     cursor.commit()
     cursor.close()
+    connection.close()
 
 
 
 
 def sql_orders(orders):
-    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?'
+    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
     connection = db.connect(connectionString)
     cursor = connection.cursor()
     sql = """INSERT INTO Orders (OrderId, CustomerId, Total) 
@@ -89,9 +98,10 @@ def sql_orders(orders):
     print('Import Complete')
     cursor.commit()
     cursor.close()
+    connection.close()
 
 def sql_orderlines(orderlines):
-    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;'
+    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
     connection = db.connect(connectionString)
     cursor = connection.cursor()
     sql = """INSERT INTO OrderLines (OrderLineId, OrderId, Qty, Price, LineTotal, ProductId) 
@@ -103,13 +113,14 @@ def sql_orderlines(orderlines):
     print('Import Complete')
     cursor.commit()
     cursor.close()
+    connection.close()
 
 
 
 
 
 def testConn():
-    connectionString = "Driver={SQL Server};Server=localhost:3306;Database=XML;Uid=computer;Pwd=password;"
+    connectionString = 'Driver={SQL Server};Server=tcp:sadserver1.database.windows.net,1433;Database=dbNW;Uid=sad666;Pwd=Ophelia?;Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
     connection = db.connect(connectionString)
     cursor = connection.cursor()
     connStr = cursor.execute('SELECT 1')
