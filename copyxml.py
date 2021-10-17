@@ -41,6 +41,7 @@ def customerParser(xmlFile):
             ImportCount += 1
             print(ImportCount)
     if len(customer_list) > 0:
+        print('Importing leftovers')
         sql_customers(customer_list)
         customer_list.clear()
         ImportCount += 1
@@ -79,6 +80,7 @@ def orderParser(xmlFile):
             ImportCount += 1
             print(ImportCount)
     if len(order_list) > 0:
+        print('Importing leftovers')
         sql_orders(order_list)
         order_list.clear()
         ImportCount += 1
@@ -125,6 +127,7 @@ def lineParser(xmlFile):
             ImportCount += 1
             print(ImportCount)
     if len(line_list) > 0:
+        print('Importing leftovers')
         sql_orderlines(line_list)
         line_list.clear()
         ImportCount += 1
