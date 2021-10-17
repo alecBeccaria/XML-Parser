@@ -66,19 +66,19 @@ def xml_parser(xmlFile):
 
         if len(customer_list) > 1000:
             sql_customers(customer_list)
-            del customer_list
+            customer_list.clear()
             ImportCount += 1
             print(ImportCount)
 
         if len(order_list) > 1000:
             sql_orders(order_list)
-            del order_list
+            order_list.clear()
             ImportCount += 1
             print(ImportCount)
 
         if len(line_list) > 1000:
             sql_orderlines(line_list)
-            del line_list
+            line_list.clear()
             ImportCount += 1
             print(ImportCount)
 
