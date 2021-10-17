@@ -40,8 +40,12 @@ def customerParser(xmlFile):
             customer_list.clear()
             ImportCount += 1
             print(ImportCount)
+    if len(customer_list) > 0:
+        sql_customers(customer_list)
+        customer_list.clear()
+        ImportCount += 1
+        print(ImportCount)
 
-        customer.clear()
         del customer_dict, cust_tuples
     del xmlTree, xmlRoot
 
@@ -74,6 +78,11 @@ def orderParser(xmlFile):
             order_list.clear()
             ImportCount += 1
             print(ImportCount)
+    if len(order_list) > 0:
+        sql_orders(order_list)
+        order_list.clear()
+        ImportCount += 1
+        print(ImportCount)
     del xmlTree, xmlRoot
 
 
@@ -115,6 +124,11 @@ def lineParser(xmlFile):
             line_list.clear()
             ImportCount += 1
             print(ImportCount)
+    if len(line_list) > 0:
+        sql_orderlines(line_list)
+        line_list.clear()
+        ImportCount += 1
+        print(ImportCount)
     del xmlTree, xmlRoot
 
 
